@@ -17,6 +17,31 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 connectDB();
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : ["*"];
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // allow all if *
+      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS blocked"));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "noloader",
+    ],
+    credentials: true,
+  })
+);
+
+app.options("*", cors());
+
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
