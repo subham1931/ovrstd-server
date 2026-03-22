@@ -43,7 +43,7 @@ app.use(
 app.options("*", cors());
 
 app.get("/", (req, res) => {
-  res.send("Server is running");
+  res.send("Server is runningg");
 });
 
 app.get("/health", (req, res) => {
