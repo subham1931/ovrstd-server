@@ -52,6 +52,30 @@ app.get("/health", (req, res) => {
 
 app.use("/auth", userRoutes);
 
+function uploadErrorMessage(err) {
+  if (err?.message) return err.message;
+  if (typeof err?.error === "string") return err.error;
+  if (err?.error?.message) return err.error.message;
+  try {
+    return JSON.stringify(err?.error ?? err);
+  } catch {
+    return "Upload failed";
+  }
+}
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  const status =
+    typeof err.http_code === "number"
+      ? err.http_code
+      : typeof err.status === "number"
+        ? err.status
+        : typeof err.statusCode === "number"
+          ? err.statusCode
+          : 500;
+  res.status(status).json({ message: uploadErrorMessage(err) });
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

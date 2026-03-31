@@ -258,8 +258,7 @@ export const deleteAddres = async (req, res) => {
     }
 }
 
-// manageWishlist
-
+// make a wishlist
 export const toggleWishlist = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
