@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import connectDB from "./db/connection.js";
 import cors from "cors";
 import userRoutes from "./routes/userRoute.js";
+import sellerRoutes from "./routes/sellerRoute.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 connectDB();
 
@@ -51,6 +53,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/auth", userRoutes);
+app.use("/seller", sellerRoutes);
 
 function uploadErrorMessage(err) {
   if (err?.message) return err.message;
