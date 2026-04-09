@@ -120,6 +120,42 @@ export const loginUser = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+//getProfile - get current authenticated user's profile
+export const getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id)
+            .select("-password")
+            .populate("wishlist")
+            .populate("orders");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            message: "Profile fetched successfully",
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                phone: user.phone,
+                gender: user.gender,
+                profileImage: user.profileImage,
+                address: user.address,
+                wishlist: user.wishlist,
+                cart: user.cart,
+                orders: user.orders,
+                tier: user.tier,
+                isActive: user.isActive,
+                createdAt: user.createdAt,
+            },
+        });
+    } catch (error) {
+        console.error("Error in getProfile:", error);
+        res.status(500).json({ message: "Failed to fetch profile", error: error.message });
+    }
+};
+
 //getAllUser
 export const getAllUser = async (req, res) => {
     try {

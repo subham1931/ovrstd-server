@@ -1,12 +1,13 @@
 import express from 'express'
 import upload from '../middleware/uploadMiddleware.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { addAddress, addToCart, changePassword, deactivateAccount, deleteAddres, getAllUser, getUserById, loginUser, registerUser, removeFromCart, toggleWishlist, updateAddress, updateuser } from '../controllers/userController.js';
+import { addAddress, addToCart, changePassword, deactivateAccount, deleteAddres, getAllUser, getProfile, getUserById, loginUser, registerUser, removeFromCart, toggleWishlist, updateAddress, updateuser } from '../controllers/userController.js';
 
 const router = express.Router();
 
 router.post("/register", upload.single("profileImage"), registerUser);
 router.post("/login", loginUser);
+router.get("/profile", protect, getProfile);
 router.get("/getAllUser", getAllUser);
 router.get("/:id", protect, getUserById);
 
