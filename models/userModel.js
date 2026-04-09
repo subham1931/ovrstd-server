@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema({
     address: [addressSchema],
 
     wishlist: [
-        { type: mongoose.Schema.Types.ObjectId, ref: "Prodcut" }
+        { type: mongoose.Schema.Types.ObjectId, ref: "Product" }
     ],
 
     cart: [
