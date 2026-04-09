@@ -283,7 +283,7 @@ export const addAddress = async (req, res) => {
         user.address.push(address);
         await user.save();
 
-        res.status(201).json({ message: "Error added sucessfully", addAddress: user.address });
+        res.status(201).json({ message: "Address added successfully", address: user.address });
     } catch (error) {
         res.status(500).json({ message: "Error adding address", error: error.message });
     }
@@ -304,7 +304,7 @@ export const updateAddress = async (req, res) => {
 
         res.status(200).json({
             message: "Address updated successfully",
-            address,
+            address: user.address,
         });
 
     } catch (error) {
