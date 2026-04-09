@@ -1,5 +1,6 @@
 import User from "../models/userModel.js";
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
+import cloudinary from '../config/cloudinary.js';
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -8,21 +9,34 @@ const generateToken = (id) => {
 //register
 export const registerUser = async (req, res) => {
     try {
-        const { username, email, password,gender } = req.body;
-        const profileImage = req.file ? req.file.path : undefined;
+        const { username, email, phone, password, gender } = req.body;
 
         if (!username || !email || !password) {
-            return res.status(400).json({ message: "All fields are required" });
+            return res.status(400).json({ message: "Username, email and password are required" });
         }
 
-        const userExist = await User.findOne({ email });
+        const userExist = await User.findOne({ 
+            $or: [
+                { email },
+                ...(phone ? [{ phone }] : [])
+            ]
+        });
         if (userExist) {
-            return res.status(409).json({ message: "User already exists" });
+            return res.status(409).json({ message: "User with this email or phone already exists" });
+        }
+
+        let profileImage;
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "ecommerce_users",
+            });
+            profileImage = result.secure_url;
         }
 
         const user = await User.create({
             username,
             email,
+            phone,
             password,
             gender,
             profileImage,
@@ -36,8 +50,16 @@ export const registerUser = async (req, res) => {
                 _id: user._id,
                 username: user.username,
                 email: user.email,
+                phone: user.phone,
                 gender: user.gender,
                 profileImage: user.profileImage,
+                address: user.address,
+                wishlist: user.wishlist,
+                cart: user.cart,
+                orders: user.orders,
+                tier: user.tier,
+                isActive: user.isActive,
+                createdAt: user.createdAt,
             },
             token: generateToken(user._id),
         });
@@ -50,24 +72,29 @@ export const registerUser = async (req, res) => {
     }
 };
 
-//logic
+//login
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, phone, password } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
+        if ((!email && !phone) || !password) {
+            return res.status(400).json({ message: "Email or phone, and password are required" });
         }
 
-        const user = await User.findOne({ email }).select("+password");
+        const user = await User.findOne({
+            $or: [
+                ...(email ? [{ email }] : []),
+                ...(phone ? [{ phone }] : [])
+            ]
+        }).select("+password");
 
         if (!user) {
-            return res.status(400).json({ message: "Invalid email or password" });
+            return res.status(400).json({ message: "Invalid credentials" });
         }
 
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
-            return res.status(400).json({ message: "Invalid email or password" });
+            return res.status(400).json({ message: "Invalid credentials" });
         }
 
         res.status(200).json({
@@ -76,8 +103,15 @@ export const loginUser = async (req, res) => {
                 _id: user._id,
                 username: user.username,
                 email: user.email,
-                role: user.role,
+                phone: user.phone,
+                gender: user.gender,
                 profileImage: user.profileImage,
+                address: user.address,
+                wishlist: user.wishlist,
+                cart: user.cart,
+                orders: user.orders,
+                tier: user.tier,
+                isActive: user.isActive,
                 createdAt: user.createdAt,
             },
             token: generateToken(user._id),
@@ -146,7 +180,9 @@ export const updateuser = async (req, res) => {
         }
 
         if (req.file) {
-            const result = await cloudinary.uploader.upload((req.file.path, { folder: "ecommerce_users" }));
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "ecommerce_users",
+            });
             updateData.profileImage = result.secure_url;
         }
 
