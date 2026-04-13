@@ -6,6 +6,7 @@ import connectDB from "./db/connection.js";
 import cors from "cors";
 import userRoutes from "./routes/userRoute.js";
 import sellerRoutes from "./routes/sellerRoute.js";
+import Category from "./models/categoryModel.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +55,16 @@ app.get("/health", (req, res) => {
 
 app.use("/auth", userRoutes);
 app.use("/seller", sellerRoutes);
+
+// Public API endpoints
+app.get("/api/categories", async (req, res) => {
+  try {
+    const categories = await Category.find({ isActive: true }).sort({ name: 1 });
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch categories" });
+  }
+});
 
 function uploadErrorMessage(err) {
   if (err?.message) return err.message;
