@@ -349,7 +349,31 @@ export const toggleWishlist = async (req, res) => {
     }
 }
 
-// getCart / addToCart / removeFromCart / updateQuantity
+export const getCart = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id)
+            .select("cart")
+            .populate({
+                path: "cart.product",
+                select: "name description price comparePrice images sizes colors isActive sku",
+            });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const cart = user.cart.filter((item) => item.product != null);
+
+        res.status(200).json({
+            message: "Cart fetched successfully",
+            cart,
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching cart", error: error.message });
+    }
+};
+
+// addToCart / removeFromCart / updateQuantity
 export const addToCart = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);

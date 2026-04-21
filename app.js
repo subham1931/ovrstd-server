@@ -7,6 +7,8 @@ import cors from "cors";
 import userRoutes from "./routes/userRoute.js";
 import sellerRoutes from "./routes/sellerRoute.js";
 import Category from "./models/categoryModel.js";
+import { protect } from "./middleware/authMiddleware.js";
+import { getCart } from "./controllers/userController.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,12 +48,15 @@ app.use(
 app.options(/.*/, cors());
 
 app.get("/", (req, res) => {
-  res.send("Server is runningg");
+  res.send("Server is running");
 });
 
 app.get("/health", (req, res) => {
   res.status(200).json({ success: true, message: "API is healthy" });
 });
+
+// Register before /auth router so GET /auth/cart cannot be captured by router.get("/:id") on older or misordered builds.
+app.get("/auth/cart", protect, getCart);
 
 app.use("/auth", userRoutes);
 app.use("/seller", sellerRoutes);
